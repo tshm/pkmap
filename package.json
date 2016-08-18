@@ -1,0 +1,25 @@
+{
+  "name": "pkmap",
+  "version": "1.0.1",
+  "description": "map",
+  "scripts": {
+    "install": "elm-package install --yes",
+    "bundle": "uglifyjs elm.js src/main.js -o bundle.js --define DEBUG=false -c -m",
+    "build": "elm-make --warn --yes Main.elm --output elm.js",
+    "test": "elm-make --warn --yes Main.elm --output elm.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tshm/pkmap.git"
+  },
+  "author": "tosh satake",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tshm/pkmap/issues"
+  },
+  "homepage": "https://github.com/tshm/pkmap",
+  "devDependencies": {
+    "elm": "^0.17.1",
+    "uglify-js": "^2.7.3"
+  }
+}
