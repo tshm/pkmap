@@ -76,11 +76,13 @@ port addCircle : Circle -> Cmd msg
 port removeCircle : Bool -> Cmd msg
 port resetCircle : Bool -> Cmd msg
 
+
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Geolocation.changes LocationChange 
+
 
 -- VIEW
 
