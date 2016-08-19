@@ -3,7 +3,7 @@ var app = Elm.Pkmap.fullscreen();
 var map;
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: -34.397, lng: 150.644},
+    center: {lat: 0.0, lng: 0.0},
     zoom: 17
   });
 }
@@ -18,17 +18,26 @@ var circles = [];
 app.ports.addCircle.subscribe(function( o ) {
   if ( !o ) return;
   if ( DEBUG ) { console.log('add', o ); }
-  var circle = new google.maps.Circle({
-    strokeColor: '#00FF00',
-    strokeOpacity: 0.6,
-    strokeWeight: 2,
-    fillColor: '#00FF00',
-    fillOpacity: 0.10,
+  // if ( DEBUG ) { o.center.latitude += 0.001 * circles.length; }
+  var circleProp = {
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.2,
+    strokeWeight: 20,
+    fillOpacity: 0.0,
     map: map,
     center: {lat: o.center.latitude, lng: o.center.longitude},
     radius: o.radius
-  });
-  circles.push( circle );
+  };
+  if ( circles.length == 0 ) {
+    circleProp = Object.assign( circleProp, {
+      strokeColor: '#00FF00',
+      strokeOpacity: 0.6,
+      strokeWeight: 2,
+      fillColor: '#00FF00',
+      fillOpacity: 0.10
+    });
+  }
+  circles.push( new google.maps.Circle( circleProp ));
   if ( DEBUG ) { console.log('circles', circles ); }
 });
 

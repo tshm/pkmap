@@ -72,8 +72,8 @@ port resetCircle : Bool -> Cmd msg
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions model = --Sub.none
-  Geolocation.changes LocationChange 
+subscriptions model = Sub.none
+  -- Geolocation.changes LocationChange 
 
 -- VIEW
 
@@ -81,7 +81,7 @@ view : Model -> Html.Html Msg
 view model =
   Html.div [ class "mdl-layout mdl-js-layout mdl-layout--fixed-header" ]
     [ header
-    -- , drawer
+    , drawer
     , Html.main' [ class "mdl-layout__content"]
       [ Html.div [ id "map"] []
       ]
@@ -103,8 +103,9 @@ drawer : Html.Html Msg
 drawer =
   Html.div [ class "mdl-layout__drawer"]
     [ Html.span [ class "mdl-layout-title"] [ Html.text "PkMap"]
-    , Html.div [ class "mdl-layout-spacer"] []
-    , button "mdl-button--fab" [ onClick AddCircle ] [ icon ["add"]]
-    , button "" [ onClick ResetCircle ] [ Html.text "reset"]
+    , Html.a [ href "http://github.com/tshm/pkmap" ]
+        [ icon ["link"]
+        , Html.text "github"
+        ]
     ]
 
