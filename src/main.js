@@ -1,18 +1,31 @@
 /*global Elm initMap google DEBUG */
 var app = Elm.Pkmap.fullscreen();
 
-var map;
+var map, marker;
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 0.0, lng: 0.0},
     zoom: 17
+  });
+  marker = new google.maps.Marker({
+    position: map.getCenter(),
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      strokeColor: '#8888FF',
+      scale: 5
+    },
+    opacity: 0.8,
+    draggable: false,
+    map: map
   });
 }
 
 app.ports.locationChange.subscribe(function( loc ) {
   if ( !loc ) return;
   if ( DEBUG ) { console.log('move', loc ); }
-  map.panTo({lat: loc.latitude, lng: loc.longitude});
+  var position = { lat: loc.latitude, lng: loc.longitude };
+  map.panTo( position );
+  marker.setPosition( position );
 });
 
 var circles = [];
