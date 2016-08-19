@@ -14,9 +14,9 @@ publish: index.html bundle.js
 page:
 	cp -r ../index.html ../bundle.js ../src ./
 	git init
-	git config user.name "Travis IC"
+	git config user.name "CircleCI"
 	git config user.email "2sm@csc.jp"
 	git add .
 	git commit -m "Deploy to GitHub pages"
-	git push --force --quiet "git@github.com:tshm/pkmap.git" master:gh-pages > /dev/null 2>&1
+	git push -v --force --quiet "git@github.com:tshm/pkmap.git" master:gh-pages > /dev/null 2>&1
 
