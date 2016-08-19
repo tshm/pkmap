@@ -40,7 +40,9 @@ init =
       { location = Location 0.0 0.0
       , circles = []
       }
-  in (model, Cmd.none)
+  in (model, initMap True)
+
+port initMap : Bool -> Cmd msg
 
 
 -- UPDATE

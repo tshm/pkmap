@@ -1,8 +1,10 @@
 /*global Elm initMap google DEBUG */
 var app = Elm.Pkmap.fullscreen();
+var map, marker, circles = [];
 
-var map, marker;
-function initMap() {
+app.ports.initMap.subscribe(function( o ) {
+  if ( !o ) return;
+  if ( DEBUG ) { console.log('initMap', o ); }
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 0.0, lng: 0.0},
     zoom: 17
@@ -18,7 +20,7 @@ function initMap() {
     draggable: false,
     map: map
   });
-}
+});
 
 app.ports.locationChange.subscribe(function( loc ) {
   if ( !loc ) return;
@@ -28,7 +30,6 @@ app.ports.locationChange.subscribe(function( loc ) {
   marker.setPosition( position );
 });
 
-var circles = [];
 app.ports.addCircle.subscribe(function( o ) {
   if ( !o ) return;
   if ( DEBUG ) { console.log('add', o ); }
