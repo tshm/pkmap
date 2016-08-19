@@ -1,7 +1,7 @@
 Pkmap
 =======================
 
-[![Build Status](https://travis-ci.org/tshm/pkmap.svg?branch=master)](https://travis-ci.org/tshm/pkmap)
+[![Build Status](https://circleci.com/gh/tshm/pkmap.svg?style=svg)](https://circleci.com/gh/tshm/pkmap)
 
 experimental mapping application
 

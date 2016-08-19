@@ -12,7 +12,7 @@ publish: index.html bundle.js
 	cd out; make -f ../Makefile page
 
 page:
-	cp -r ../index.html ../bundle.js ../src ./
+	cp -r ../circle.yml ../index.html ../bundle.js ../src ./
 	git init
 	git config user.name "CircleCI"
 	git config user.email "2sm@csc.jp"
