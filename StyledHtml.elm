@@ -1,4 +1,4 @@
-module StyledHtml exposing (icon, spinner, button, div)
+module StyledHtml exposing (icon, spinner, button)
 {-| Html elements added with custom style
 -}
 
@@ -12,9 +12,6 @@ icon name =
 -- icon xs =
 --   let cls = List.foldr (\x s -> s ++ (" fa-" ++ x)) "fa" xs
 --   in Html.i [ class cls ] []
-
-div : List (Html.Attribute msg) -> List (Html.Html msg) -> Html.Html msg
-div = Html.div
 
 button : String -> List (Html.Attribute msg) -> List (Html.Html msg) -> Html.Html msg
 button cls attr html =

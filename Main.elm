@@ -1,6 +1,6 @@
 port module Pkmap exposing (main)
 
-import Html
+import Html exposing (text, div, span)
 import Geolocation
 import Html.App
 import Html.Events exposing (onClick)
@@ -19,8 +19,7 @@ main = Html.App.program
 -- MODEL
 
 type alias Model =
-  { title : String
-  , location : Location
+  { location : Location
   , circles : List Circle
   }
 
@@ -36,7 +35,12 @@ type alias Circle =
 
 init : (Model, Cmd Msg)
 init =
-  (Model "test" (Location 0.0 0.0) [], Cmd.none)
+  let
+    model =
+      { location = Location 0.0 0.0
+      , circles = []
+      }
+  in (model, Cmd.none)
 
 
 -- UPDATE
@@ -88,36 +92,42 @@ subscriptions model =
 
 view : Model -> Html.Html Msg
 view model =
-  Html.div [ class "mdl-layout mdl-js-layout mdl-layout--fixed-header" ]
+  div [ class "mdl-layout mdl-js-layout mdl-layout--fixed-header" ]
     [ header
     , drawer
     , Html.main' [ class "mdl-layout__content"]
-      [ Html.div [ id "map"] []
+      [ div [ id "map"] []
       ]
     ]
 
 header : Html.Html Msg
 header =
   Html.header [ class "mdl-layout__header"]
-    [ Html.div [ class "mdl-layout__header-row"]
-      [ Html.span [ class "mdl-layout-title"] [ Html.text "PkMap"]
-      , Html.div [ class "mdl-layout-spacer"] []
-      , button "mdl-button--raised" [ onClick RemoveCircle ] [ icon ["delete"]]
-      , Html.div [ class "mdl-layout-spacer"] []
-      , button "mdl-button--fab mdl-button--colored" [ onClick AddCircle ] [ icon ["add"]]
+    [ div [ class "mdl-layout__header-row"]
+      [ span [ class "mdl-layout-title"] [ text "PkMap"]
+      , spacer
+      , button ""
+        [ onClick RemoveCircle ] [ icon ["delete"]]
+      , spacer
+      , button "mdl-button--fab mdl-button--colored"
+        [ onClick AddCircle ] [ icon ["add"]]
       ]
     ]
 
 drawer : Html.Html Msg
 drawer =
-  Html.div [ class "mdl-layout__drawer"]
-    [ Html.span [ class "mdl-layout-title"] [ Html.text "PkMap"]
-    , button "mdl-button"
+  div [ class "mdl-layout__drawer"]
+    [ span [ class "mdl-layout-title"] [ text "PkMap"]
+    , button ""
       [ onClick ResetCircle ]
-      [ Html.text "Reset", icon ["delete_sweep"]]
+      [ text "Reset ", icon ["delete_sweep"]]
+    , spacer
     , Html.a [ href "http://github.com/tshm/pkmap" ]
-        [ icon ["link"]
-        , Html.text "github"
-        ]
+      [ icon ["link"]
+      , text "github"
+      ]
     ]
+
+spacer : Html.Html Msg
+spacer = div [ class "mdl-layout-spacer"] []
 
