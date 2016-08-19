@@ -55,6 +55,13 @@ app.ports.addCircle.subscribe(function( o ) {
   if ( DEBUG ) { console.log('circles', circles ); }
 });
 
+app.ports.removeCircle.subscribe(function( o ) {
+  if ( !o ) return;
+  if ( DEBUG ) { console.log('remove', o ); }
+  var c = circles.pop();
+  c.setMap( null );
+});
+
 app.ports.resetCircle.subscribe(function( o ) {
   if ( !o ) return;
   if ( DEBUG ) { console.log('reset', o ); }

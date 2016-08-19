@@ -46,6 +46,7 @@ type Msg
   | LocationChange Geolocation.Location
   | AddCircle
   | ResetCircle
+  | RemoveCircle
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -63,10 +64,16 @@ update msg model =
         circles = circle :: model.circles
       in ({ model | circles = circles }, addCircle circle)
 
+    RemoveCircle ->
+        case List.tail model.circles of
+          Just circles -> ({ model | circles = circles }, removeCircle True)
+          Nothing -> (model, Cmd.none)
+
     ResetCircle -> ({ model | circles = []}, resetCircle True)
 
 port locationChange : Location -> Cmd msg
 port addCircle : Circle -> Cmd msg
+port removeCircle : Bool -> Cmd msg
 port resetCircle : Bool -> Cmd msg
 
 -- SUBSCRIPTIONS
@@ -93,7 +100,7 @@ header =
     [ Html.div [ class "mdl-layout__header-row"]
       [ Html.span [ class "mdl-layout-title"] [ Html.text "PkMap"]
       , Html.div [ class "mdl-layout-spacer"] []
-      , button "mdl-button--colored" [ onClick ResetCircle ] [ Html.text "reset"]
+      , button "mdl-button--raised" [ onClick RemoveCircle ] [ icon ["delete"]]
       , Html.div [ class "mdl-layout-spacer"] []
       , button "mdl-button--fab mdl-button--colored" [ onClick AddCircle ] [ icon ["add"]]
       ]
@@ -103,6 +110,9 @@ drawer : Html.Html Msg
 drawer =
   Html.div [ class "mdl-layout__drawer"]
     [ Html.span [ class "mdl-layout-title"] [ Html.text "PkMap"]
+    , button "mdl-button"
+      [ onClick ResetCircle ]
+      [ Html.text "Reset", icon ["delete_sweep"]]
     , Html.a [ href "http://github.com/tshm/pkmap" ]
         [ icon ["link"]
         , Html.text "github"
