@@ -1,3 +1,4 @@
+/*global Elm */
 var app = Elm.Pkmap.fullscreen();
 
 var map;

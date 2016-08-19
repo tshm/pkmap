@@ -6,7 +6,7 @@
     "install": "elm-package install --yes",
     "bundle": "uglifyjs elm.js src/main.js -o bundle.js --define DEBUG=false -c -m",
     "build": "elm-make --warn --yes Main.elm --output elm.js",
-    "test": "elm-make --warn --yes Main.elm --output elm.js"
+    "test": "eslint src/main.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,11 @@
   "homepage": "https://github.com/tshm/pkmap",
   "devDependencies": {
     "elm": "^0.17.1",
+    "eslint": "^3.3.1",
+    "eslint-config-google": "^0.6.0",
+    "eslint-config-standard": "^5.3.5",
+    "eslint-plugin-promise": "^2.0.1",
+    "eslint-plugin-standard": "^2.0.0",
     "uglify-js": "^2.7.3"
   }
 }
