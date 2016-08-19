@@ -1,4 +1,4 @@
-/*global Elm */
+/*global Elm initMap google DEBUG */
 var app = Elm.Pkmap.fullscreen();
 
 var map;
