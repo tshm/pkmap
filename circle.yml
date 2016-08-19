@@ -1,0 +1,7 @@
+## github pages deployment commands
+deployment:
+  production:
+    branch: master
+    commands:
+      - make publish
+
