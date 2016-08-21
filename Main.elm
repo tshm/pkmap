@@ -108,10 +108,10 @@ header =
     [ div [ class "mdl-layout__header-row"]
       [ span [ class "mdl-layout-title"] [ text "PkMap"]
       , spacer
-      , button ""
+      , button "mdl-button--fab mdl-button--mini-fab"
         [ onClick RemoveCircle ] [ icon ["delete"]]
       , spacer
-      , button "mdl-button--fab mdl-button--colored"
+      , button "mdl-button--fab mdl-button--mini-fab mdl-button--colored"
         [ onClick AddCircle ] [ icon ["add"]]
       ]
     ]
