@@ -1,11 +1,10 @@
 port module Pkmap exposing (main)
 
-import Html exposing (text, div, span)
+import Html exposing (input, label, img, a, nav, text, div, span, button)
 import Geolocation
 import Html.App
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
-import StyledHtml exposing (..)
 
 main : Program Never
 main = Html.App.program
@@ -94,42 +93,49 @@ subscriptions model =
 
 view : Model -> Html.Html Msg
 view model =
-  div [ class "mdl-layout mdl-js-layout mdl-layout--fixed-header" ]
-    [ header
-    , drawer
-    , Html.main' [ class "mdl-layout__content"]
+  div []
+    [ header (List.isEmpty model.circles)
+    , modal
+    , Html.main' []
       [ div [ id "map"] []
+      , button [ onClick AddCircle, class "plus warning"] [ text "+"]
       ]
     ]
 
-header : Html.Html Msg
-header =
-  Html.header [ class "mdl-layout__header"]
-    [ div [ class "mdl-layout__header-row"]
-      [ span [ class "mdl-layout-title"] [ text "PkMap"]
-      , spacer
-      , button "mdl-button--fab mdl-button--mini-fab"
-        [ onClick RemoveCircle ] [ icon ["delete"]]
-      , spacer
-      , button "mdl-button--fab mdl-button--mini-fab mdl-button--colored"
-        [ onClick AddCircle ] [ icon ["add"]]
+header : Bool -> Html.Html Msg
+header isEmpty =
+  let
+    buttons =
+      [ label [for "bmenub", class "burger pseudo button"] [ text "≡"]
+      , button [ onClick RemoveCircle ] [ text "Delete"]
+      , div [ class "menu"]
+        [ label [ for "modal", class "error button"] [ text "Reset"]
+        ]
+      ]
+  in
+    Html.header []
+      [ nav [] <|
+        [ input [id "bmenub", type' "checkbox", class "show"] []
+        , a [ href "#", class "brand"] [ text "PkMap" ]
+        ] ++ if isEmpty then [] else buttons
+      ]
+
+modal : Html.Html Msg
+modal =
+  Html.div [ class "modal"]
+    [ input [ id "modal", type' "checkbox"] []
+    , label [ for "modal", class "overlay"] []
+    , Html.article []
+      [ Html.header []
+        [ text "Confirm"
+        , label [ for "modal", class "close"] [ text "×"]
+        ]
+      , Html.section [] [ text "Are you sure to remove all marks?"]
+      , Html.footer []
+        [ label [ for "modal"]
+          [ a [ class "button dangerous", onClick ResetCircle ] [text "OK"]
+          ]
+        ]
       ]
     ]
-
-drawer : Html.Html Msg
-drawer =
-  div [ class "mdl-layout__drawer"]
-    [ span [ class "mdl-layout-title"] [ text "PkMap"]
-    , button ""
-      [ onClick ResetCircle ]
-      [ text "Reset ", icon ["delete_sweep"]]
-    , spacer
-    , Html.a [ href "http://github.com/tshm/pkmap" ]
-      [ icon ["link"]
-      , text "github"
-      ]
-    ]
-
-spacer : Html.Html Msg
-spacer = div [ class "mdl-layout-spacer"] []
 

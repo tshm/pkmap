@@ -9,6 +9,19 @@ main {
   height: 100vh;
 }
 
+.plus {
+  font-size: 1.5em;
+  background-color: red;
+  position: absolute;
+  bottom: 6em;
+  right: 1em;
+  border-radius: 100%;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
 #map {
   background-color: grey;
   width: 100%;
