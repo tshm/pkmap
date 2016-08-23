@@ -19,7 +19,13 @@ main {
 }
 
 .hidden {
+  font-size: 0.8em;
   visibility: hidden;
+  border-radius: 100%;
+}
+
+sup {
+  background-color: grey;
 }
 
 #map {

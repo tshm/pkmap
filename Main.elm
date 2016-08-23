@@ -94,7 +94,7 @@ subscriptions model =
 view : Model -> Html.Html Msg
 view model =
   div []
-    [ header (List.isEmpty model.circles)
+    [ header model
     , modal
     , Html.main' []
       [ div [ id "map"] []
@@ -102,12 +102,15 @@ view model =
       ]
     ]
 
-header : Bool -> Html.Html Msg
-header isEmpty =
+header : Model -> Html.Html Msg
+header model =
   let
     buttons =
       [ label [for "bmenub", class "burger pseudo button"] [ text "≡"]
-      , button [ onClick RemoveCircle ] [ text "Delete"]
+      , button [ onClick RemoveCircle ]
+        [ text "Delete"
+        , Html.sup [] [ text <| toString (List.length model.circles )]
+        ]
       , div [ class "menu"]
         [ label [ for "modal", class "error button"] [ text "Reset"]
         ]
@@ -117,7 +120,7 @@ header isEmpty =
       [ nav [] <|
         [ input [id "bmenub", type' "checkbox", class "show"] []
         , a [ href "#", class "brand"] [ text "PkMap" ]
-        ] ++ if isEmpty then [] else buttons
+        ] ++ if List.isEmpty model.circles then [] else buttons
       ]
 
 modal : Html.Html Msg
