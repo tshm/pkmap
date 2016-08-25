@@ -23,17 +23,20 @@ app.ports.initMap.subscribe(function( o ) {
 });
 
 app.ports.locationChange.subscribe(function( loc ) {
-  if ( !loc ) return;
+  if ( !loc || !map || !marker ) return;
   if ( DEBUG ) { console.log('move', loc ); }
   var position = { lat: loc.latitude, lng: loc.longitude };
   map.panTo( position );
   marker.setPosition( position );
 });
 
-app.ports.addCircle.subscribe(function( o ) {
-  if ( !o ) return;
-  if ( DEBUG ) { console.log('add', o ); }
-  // if ( DEBUG ) { o.center.latitude += 0.001 * circles.length; }
+app.ports.drawCircles.subscribe(function( xs ) {
+  if ( DEBUG ) { console.log('drawCircles', xs ); }
+  resetCircle();
+  xs.forEach( drawCircle );
+});
+
+function drawCircle( o ) {
   var circleProp = {
     strokeColor: '#FF0000',
     strokeOpacity: 0.2,
@@ -53,23 +56,12 @@ app.ports.addCircle.subscribe(function( o ) {
     });
   }
   circles.push( new google.maps.Circle( circleProp ));
-  if ( DEBUG ) { console.log('circles', circles ); }
-});
+}
 
-app.ports.removeCircle.subscribe(function( o ) {
-  if ( !o ) return;
-  if ( DEBUG ) { console.log('remove', o ); }
-  var c = circles.pop();
-  c.setMap( null );
-});
-
-app.ports.resetCircle.subscribe(function( o ) {
-  if ( !o ) return;
-  if ( DEBUG ) { console.log('reset', o ); }
+function resetCircle() {
   circles.forEach(function(o) {
     o.setMap( null );
   });
   circles.splice( 0, circles.length );
-  if ( DEBUG ) { console.log('circles', circles ); }
-});
+}
 

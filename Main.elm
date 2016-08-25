@@ -2,17 +2,76 @@ port module Pkmap exposing (main)
 
 import Html exposing (input, label, img, a, nav, text, div, span, button)
 import Geolocation
+import Navigation
 import Html.App
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
+import String
+import List
 
 main : Program Never
-main = Html.App.program
+main = Navigation.program urlParser
   { init = init
   , view = view
   , update = update
+  , urlUpdate = urlUpdate
   , subscriptions = subscriptions
   }
+
+
+-- URL Handlers
+
+toUrl : Model -> String
+toUrl model =
+  let
+    toParam c =
+      (toString c.center.latitude) ++ "," ++ (toString c.center.longitude)
+    param =
+      model.circles
+        |> List.map toParam
+        |> String.join "/"
+  in "#" ++ param
+
+fromUrl : String -> Result String (List (Float, Float))
+fromUrl url =
+  let
+    parseFloatPair str =
+      case (String.split "," str) of
+        a::b::[] -> Result.map2 (,) (String.toFloat a) (String.toFloat b)
+        _ -> Err "parse error"
+  in
+    url
+      |> String.dropLeft 1
+      |> String.split "/"
+      |> List.filter (\s -> False == String.isEmpty s)
+      |> List.map parseFloatPair
+      |> allOk
+
+allOk : List (Result String a) -> Result String (List a)
+allOk arr =
+  let
+    pack result aggr =
+      aggr `Result.andThen` \xs ->
+        result `Result.andThen` \v ->
+          Ok (v :: xs)
+  in List.foldr pack (Ok []) arr
+
+urlParser : Navigation.Parser (Result String (List (Float, Float)))
+urlParser =
+  Navigation.makeParser (fromUrl << .hash)
+
+urlUpdate : Result String (List (Float,Float)) -> Model -> (Model, Cmd Msg)
+urlUpdate result model =
+  case result of
+    Ok floatPairs ->
+      let
+        makeCircle (lat, lng) = Circle (Location lat lng) radius
+        newcircles = List.map makeCircle floatPairs
+      in ({ model | circles = newcircles }, drawCircles newcircles)
+    Err msg ->
+      let
+        x = Debug.log "urlUpdate failure" msg
+      in init result
 
 
 -- MODEL
@@ -32,14 +91,18 @@ type alias Circle =
   , radius : Float
   }
 
-init : (Model, Cmd Msg)
-init =
+radius : Float
+radius = 200.0
+
+init : Result String (List (Float,Float)) -> (Model, Cmd Msg)
+init result =
   let
-    model =
+    emptymodel =
       { location = Location 0.0 0.0
       , circles = []
       }
-  in (model, initMap True)
+    (model, cmd) = urlUpdate result emptymodel
+  in model ! [ initMap True, cmd ]
 
 port initMap : Bool -> Cmd msg
 
@@ -65,21 +128,26 @@ update msg model =
 
     AddCircle ->
       let
-        circle = Circle model.location 200.0
+        circle = Circle model.location radius
         circles = circle :: model.circles
-      in ({ model | circles = circles }, addCircle circle)
+        newmodel = { model | circles = circles }
+      in newmodel ! [ drawCircles circles, Navigation.modifyUrl (toUrl newmodel)]
 
     RemoveCircle ->
-        case List.tail model.circles of
-          Just circles -> ({ model | circles = circles }, removeCircle True)
-          Nothing -> (model, Cmd.none)
+      case List.tail model.circles of
+        Just circles ->
+          let
+            newmodel = { model | circles = circles }
+          in newmodel ! [ drawCircles circles, Navigation.modifyUrl (toUrl newmodel)]
+        Nothing -> (model, Cmd.none)
 
-    ResetCircle -> ({ model | circles = []}, resetCircle True)
+    ResetCircle ->
+      let
+        newmodel = { model | circles = []}
+      in newmodel ! [ drawCircles [], Navigation.modifyUrl (toUrl newmodel)]
 
 port locationChange : Location -> Cmd msg
-port addCircle : Circle -> Cmd msg
-port removeCircle : Bool -> Cmd msg
-port resetCircle : Bool -> Cmd msg
+port drawCircles : List Circle -> Cmd msg
 
 
 -- SUBSCRIPTIONS
