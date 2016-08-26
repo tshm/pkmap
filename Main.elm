@@ -3,7 +3,7 @@ port module Pkmap exposing (main)
 import Html exposing (input, label, img, a, nav, text, div, span, button)
 import Geolocation
 import Navigation
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
 import Json.Decode
 import String
@@ -37,31 +37,32 @@ toUrl model =
 fromUrl : String -> Result String (List Circle)
 fromUrl url =
   let
-    x = Debug.log "url" url
-    decoder =
+    circleDecoder =
       Json.Decode.tuple3
         (\x y z -> Circle (Location x y) z)
         Json.Decode.float
         Json.Decode.float
         Json.Decode.float
     parseFloatTriple str =
-      Json.Decode.decodeString decoder ("[" ++ str ++ "]")
+      Json.Decode.decodeString
+        (Json.Decode.list circleDecoder) str
   in
     url
       |> String.dropLeft 1
       |> String.split "/"
       |> List.filter (not << String.isEmpty)
-      |> List.map parseFloatTriple
-      |> allOk
+      |> String.join "],["
+      |> \str -> "[[" ++ str ++ "]]"
+      |> parseFloatTriple
 
-allOk : List (Result String a) -> Result String (List a)
-allOk arr =
-  let
-    pack result aggr =
-      aggr `Result.andThen` \xs ->
-        result `Result.andThen` \v ->
-          Ok (v :: xs)
-  in List.foldr pack (Ok []) arr
+-- allOk : List (Result String a) -> Result String (List a)
+-- allOk arr =
+--   let
+--     pack result aggr =
+--       aggr `Result.andThen` \xs ->
+--         result `Result.andThen` \v ->
+--           Ok (v :: xs)
+--   in List.foldr pack (Ok []) arr
 
 urlParser : Navigation.Parser (Result String (List Circle))
 urlParser =
@@ -96,15 +97,18 @@ type alias Circle =
   , radius : Float
   }
 
+defaultRadius : Float
+defaultRadius = 200.0
+
 init : Result String (List Circle) -> (Model, Cmd Msg)
 init result =
   let
-    emptymodel =
+    initModel =
       { location = Location 0.0 0.0
       , circles = []
-      , radius = 200.0
+      , radius = defaultRadius
       }
-    (model, cmd) = urlUpdate result emptymodel
+    (model, cmd) = urlUpdate result initModel
   in model ! [ initMap True, cmd ]
 
 
@@ -115,6 +119,7 @@ type Msg
   | AddCircle
   | ResetCircle
   | RemoveCircle
+  | ChangeRadius String
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -137,12 +142,17 @@ update msg model =
           let
             newmodel = { model | circles = circles }
           in newmodel ! [ drawCircles circles, Navigation.modifyUrl (toUrl newmodel)]
-        Nothing -> (model, Cmd.none)
+        Nothing -> model ! []
 
     ResetCircle ->
       let
         newmodel = { model | circles = []}
       in newmodel ! [ drawCircles [], Navigation.modifyUrl (toUrl newmodel)]
+
+    ChangeRadius str ->
+      let
+        radius = Result.withDefault defaultRadius <| String.toFloat str
+      in { model | radius = radius } ! []
 
 port initMap : Bool -> Cmd msg
 port locationChange : Location -> Cmd msg
@@ -171,24 +181,33 @@ view model =
 
 header : Model -> Html.Html Msg
 header model =
-  let
-    buttons =
-      [ label [for "bmenub", class "burger pseudo button"] [ text "≡"]
-      , button [ onClick RemoveCircle ]
+  Html.header []
+    [ nav []
+      [ input [id "bmenub", type' "checkbox", class "show"] []
+      , a [ href "#", class "brand"] [ text "PkMap" ]
+      , label [for "bmenub", class "burger pseudo button"] [ text "≡"]
+      , button [ onClick RemoveCircle, disabled (List.isEmpty model.circles )]
         [ text "Delete"
         , Html.sup [] [ text <| toString (List.length model.circles )]
         ]
       , div [ class "menu"]
-        [ label [ for "modal", class "error button"] [ text "Reset"]
+        [ label
+          [ for "modal"
+          , class "error button"
+          , disabled (List.isEmpty model.circles )
+          ]
+          [ text "Reset"]
+        , label []
+          [ text "radius:"
+          , input
+              [ value ( toString model.radius )
+              , onInput ChangeRadius
+              ]
+              []
+          ]
         ]
       ]
-  in
-    Html.header []
-      [ nav [] <|
-        [ input [id "bmenub", type' "checkbox", class "show"] []
-        , a [ href "#", class "brand"] [ text "PkMap" ]
-        ] ++ if List.isEmpty model.circles then [] else buttons
-      ]
+    ]
 
 modal : Html.Html Msg
 modal =

@@ -33,7 +33,7 @@ app.ports.locationChange.subscribe(function( loc ) {
 app.ports.drawCircles.subscribe(function( xs ) {
   if ( DEBUG ) { console.log('drawCircles', xs ); }
   resetCircle();
-  xs.forEach( drawCircle );
+  xs.reverse().forEach( drawCircle );
 });
 
 function drawCircle( o ) {
