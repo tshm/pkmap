@@ -3,7 +3,6 @@ port module Pkmap exposing (main)
 import Html exposing (input, label, img, a, nav, text, div, span, button)
 import Geolocation
 import Navigation
-import Html.App
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
 import String
@@ -24,13 +23,13 @@ main = Navigation.program urlParser
 toUrl : Model -> String
 toUrl model =
   let
-    toParam c =
+    toParamStr c =
       (toString c.center.latitude) ++ "," ++ (toString c.center.longitude)
-    param =
+    hashStr =
       model.circles
-        |> List.map toParam
+        |> List.map toParamStr
         |> String.join "/"
-  in "#" ++ param
+  in "#" ++ hashStr
 
 fromUrl : String -> Result String (List (Float, Float))
 fromUrl url =
@@ -43,7 +42,7 @@ fromUrl url =
     url
       |> String.dropLeft 1
       |> String.split "/"
-      |> List.filter (\s -> False == String.isEmpty s)
+      |> List.filter (not << String.isEmpty)
       |> List.map parseFloatPair
       |> allOk
 
@@ -104,14 +103,11 @@ init result =
     (model, cmd) = urlUpdate result emptymodel
   in model ! [ initMap True, cmd ]
 
-port initMap : Bool -> Cmd msg
-
 
 -- UPDATE
 
 type Msg
-  = NoOp
-  | LocationChange Geolocation.Location
+  = LocationChange Geolocation.Location
   | AddCircle
   | ResetCircle
   | RemoveCircle
@@ -119,8 +115,6 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    NoOp -> (model, Cmd.none)
-
     LocationChange geoloc ->
       let
         location = Location geoloc.latitude geoloc.longitude
@@ -146,6 +140,7 @@ update msg model =
         newmodel = { model | circles = []}
       in newmodel ! [ drawCircles [], Navigation.modifyUrl (toUrl newmodel)]
 
+port initMap : Bool -> Cmd msg
 port locationChange : Location -> Cmd msg
 port drawCircles : List Circle -> Cmd msg
 
