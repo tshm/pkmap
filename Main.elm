@@ -119,7 +119,7 @@ type Msg
   | AddCircle
   | ResetCircle
   | RemoveCircle
-  | ChangeRadius String
+  --| ChangeRadius String
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -149,10 +149,10 @@ update msg model =
         newmodel = { model | circles = []}
       in newmodel ! [ drawCircles [], Navigation.modifyUrl (toUrl newmodel)]
 
-    ChangeRadius str ->
-      let
-        radius = Result.withDefault defaultRadius <| String.toFloat str
-      in { model | radius = radius } ! []
+    -- ChangeRadius str ->
+    --   let
+    --     radius = Result.withDefault defaultRadius <| String.toFloat str
+    --   in { model | radius = radius } ! []
 
 port initMap : Bool -> Cmd msg
 port locationChange : Location -> Cmd msg
@@ -197,14 +197,14 @@ header model =
           , disabled (List.isEmpty model.circles )
           ]
           [ text "Reset"]
-        , label []
-          [ text "radius:"
-          , input
-              [ value ( toString model.radius )
-              , onInput ChangeRadius
-              ]
-              []
-          ]
+        -- , label []
+        --   [ text "radius:"
+        --   , input
+        --       [ value ( toString model.radius )
+        --       , onInput ChangeRadius
+        --       ]
+        --       []
+        --   ]
         ]
       ]
     ]
