@@ -123,20 +123,20 @@ update msg model =
         circle = Circle model.location model.radius
         circles = circle :: model.circles
         newmodel = { model | circles = circles }
-      in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
+      in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
 
     RemoveCircle ->
       case List.tail model.circles of
         Just circles ->
           let
             newmodel = { model | circles = circles }
-          in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
+          in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
         Nothing -> model ! []
 
     ResetCircle ->
       let
         newmodel = { model | circles = []}
-      in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
+      in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
 
     -- ChangeRadius str ->
     --   let
