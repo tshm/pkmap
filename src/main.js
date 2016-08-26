@@ -1,12 +1,14 @@
-/*global Elm initMap google DEBUG */
+/*global Elm initMap google DEBUG window location */
 var app = Elm.Pkmap.fullscreen();
 var map, marker, circles = [];
 var storageKey = 'urlHash';
 
-document.body.addEventListener('hashchange', function( e ) {
-  console.log( e );
-  //window.localStorage[ storageKey ] = 
-});
+// only works on the first load
+// restore the last visited url
+// because "mobile-safari home shortcut" does not persist url
+document.body.onload = function() {
+  location.hash = window.localStorage[ storageKey ];
+};
 
 app.ports.initMap.subscribe(function( o ) {
   if ( !o ) return;
@@ -40,6 +42,7 @@ app.ports.drawCircles.subscribe(function( xs ) {
   if ( DEBUG ) { console.log('drawCircles', xs ); }
   resetCircle();
   xs.reverse().forEach( drawCircle );
+  window.localStorage[ storageKey ] = location.hash;
 });
 
 function drawCircle( o ) {
