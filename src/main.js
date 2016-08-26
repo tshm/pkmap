@@ -1,6 +1,12 @@
 /*global Elm initMap google DEBUG */
 var app = Elm.Pkmap.fullscreen();
 var map, marker, circles = [];
+var storageKey = 'urlHash';
+
+document.body.addEventListener('hashchange', function( e ) {
+  console.log( e );
+  //window.localStorage[ storageKey ] = 
+});
 
 app.ports.initMap.subscribe(function( o ) {
   if ( !o ) return;

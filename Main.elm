@@ -55,15 +55,6 @@ fromUrl url =
       |> \str -> "[[" ++ str ++ "]]"
       |> parseFloatTriple
 
--- allOk : List (Result String a) -> Result String (List a)
--- allOk arr =
---   let
---     pack result aggr =
---       aggr `Result.andThen` \xs ->
---         result `Result.andThen` \v ->
---           Ok (v :: xs)
---   in List.foldr pack (Ok []) arr
-
 urlParser : Navigation.Parser (Result String (List Circle))
 urlParser =
   Navigation.makeParser (fromUrl << .hash)
@@ -74,9 +65,7 @@ urlUpdate result model =
     Ok circles ->
       ({ model | circles = circles }, drawCircles circles)
     Err msg ->
-      let
-        x = Debug.log "urlUpdate failure" msg
-      in (model, Cmd.none)
+      (model, Cmd.none)
 
 
 -- MODEL
@@ -134,20 +123,20 @@ update msg model =
         circle = Circle model.location model.radius
         circles = circle :: model.circles
         newmodel = { model | circles = circles }
-      in newmodel ! [ drawCircles circles ]
+      in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
 
     RemoveCircle ->
       case List.tail model.circles of
         Just circles ->
           let
             newmodel = { model | circles = circles }
-          in newmodel ! [ drawCircles circles ]
+          in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
         Nothing -> model ! []
 
     ResetCircle ->
       let
         newmodel = { model | circles = []}
-      in newmodel ! [ drawCircles [] ]
+      in newmodel ! [ Navigation.modifyUrl (toUrl newmodel)]
 
     -- ChangeRadius str ->
     --   let
