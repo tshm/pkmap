@@ -5,6 +5,7 @@ import Geolocation
 import Navigation
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
+import Json.Decode
 import String
 import List
 
@@ -24,26 +25,33 @@ toUrl : Model -> String
 toUrl model =
   let
     toParamStr c =
-      (toString c.center.latitude) ++ "," ++ (toString c.center.longitude)
+      (toString c.center.latitude) ++ "," ++
+      (toString c.center.longitude) ++ "," ++
+      (toString c.radius)
     hashStr =
       model.circles
         |> List.map toParamStr
         |> String.join "/"
   in "#" ++ hashStr
 
-fromUrl : String -> Result String (List (Float, Float))
+fromUrl : String -> Result String (List Circle)
 fromUrl url =
   let
-    parseFloatPair str =
-      case (String.split "," str) of
-        a::b::[] -> Result.map2 (,) (String.toFloat a) (String.toFloat b)
-        _ -> Err "parse error"
+    x = Debug.log "url" url
+    decoder =
+      Json.Decode.tuple3
+        (\x y z -> Circle (Location x y) z)
+        Json.Decode.float
+        Json.Decode.float
+        Json.Decode.float
+    parseFloatTriple str =
+      Json.Decode.decodeString decoder ("[" ++ str ++ "]")
   in
     url
       |> String.dropLeft 1
       |> String.split "/"
       |> List.filter (not << String.isEmpty)
-      |> List.map parseFloatPair
+      |> List.map parseFloatTriple
       |> allOk
 
 allOk : List (Result String a) -> Result String (List a)
@@ -55,22 +63,19 @@ allOk arr =
           Ok (v :: xs)
   in List.foldr pack (Ok []) arr
 
-urlParser : Navigation.Parser (Result String (List (Float, Float)))
+urlParser : Navigation.Parser (Result String (List Circle))
 urlParser =
   Navigation.makeParser (fromUrl << .hash)
 
-urlUpdate : Result String (List (Float,Float)) -> Model -> (Model, Cmd Msg)
+urlUpdate : Result String (List Circle) -> Model -> (Model, Cmd Msg)
 urlUpdate result model =
   case result of
-    Ok floatPairs ->
-      let
-        makeCircle (lat, lng) = Circle (Location lat lng) radius
-        newcircles = List.map makeCircle floatPairs
-      in ({ model | circles = newcircles }, drawCircles newcircles)
+    Ok circles ->
+      ({ model | circles = circles }, drawCircles circles)
     Err msg ->
       let
         x = Debug.log "urlUpdate failure" msg
-      in init result
+      in (model, Cmd.none)
 
 
 -- MODEL
@@ -78,6 +83,7 @@ urlUpdate result model =
 type alias Model =
   { location : Location
   , circles : List Circle
+  , radius : Float
   }
 
 type alias Location =
@@ -90,15 +96,13 @@ type alias Circle =
   , radius : Float
   }
 
-radius : Float
-radius = 200.0
-
-init : Result String (List (Float,Float)) -> (Model, Cmd Msg)
+init : Result String (List Circle) -> (Model, Cmd Msg)
 init result =
   let
     emptymodel =
       { location = Location 0.0 0.0
       , circles = []
+      , radius = 200.0
       }
     (model, cmd) = urlUpdate result emptymodel
   in model ! [ initMap True, cmd ]
@@ -122,7 +126,7 @@ update msg model =
 
     AddCircle ->
       let
-        circle = Circle model.location radius
+        circle = Circle model.location model.radius
         circles = circle :: model.circles
         newmodel = { model | circles = circles }
       in newmodel ! [ drawCircles circles, Navigation.modifyUrl (toUrl newmodel)]
