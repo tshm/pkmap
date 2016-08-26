@@ -13,8 +13,8 @@ main {
   font-size: 1.5em;
   background-color: red;
   position: absolute;
-  bottom: 6em;
-  right: 1em;
+  bottom: 1em;
+  right: 2em;
   border-radius: 100%;
 }
 
