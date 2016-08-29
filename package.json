@@ -1,11 +1,11 @@
 {
   "name": "pkmap",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "map",
   "scripts": {
     "install": "elm-package install --yes",
     "bundle": "uglifyjs elm.js src/main.js -o bundle.js --define DEBUG=false -c -m",
-    "build": "elm-make --warn --yes Main.elm --output elm.js",
+    "build": "elm-make --warn --yes Pkmap.elm --output elm.js",
     "test": "eslint src/main.js"
   },
   "repository": {

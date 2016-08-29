@@ -32,11 +32,12 @@ toUrl model =
       model.circles
         |> List.map toParamStr
         |> String.join "/"
-  in "#" ++ hashStr
+  in "#/" ++ hashStr
 
-fromUrl : String -> Result String (List Circle)
+fromUrl : String -> Result String UrlArg
 fromUrl url =
   let
+    -- x = Debug.log "fromUrl" url
     circleDecoder =
       Json.Decode.tuple3
         (\x y z -> Circle (Location x y) z)
@@ -44,28 +45,37 @@ fromUrl url =
         Json.Decode.float
         Json.Decode.float
     parseFloatTriple str =
-      Json.Decode.decodeString
-        (Json.Decode.list circleDecoder) str
+      Result.map Just <|
+        Json.Decode.decodeString
+          (Json.Decode.list circleDecoder) str
   in
-    url
-      |> String.dropLeft 1
-      |> String.split "/"
-      |> List.filter (not << String.isEmpty)
-      |> String.join "],["
-      |> \str -> "[[" ++ str ++ "]]"
-      |> parseFloatTriple
+    case url of
+      "" ->
+        Ok Nothing
+      "#/" ->
+        Ok (Just [])
+      str ->
+        str
+          |> String.dropLeft 2
+          |> String.split "/"
+          |> List.filter (not << String.isEmpty)
+          |> String.join "],["
+          |> \s -> "[[" ++ s ++ "]]"
+          |> parseFloatTriple
 
-urlParser : Navigation.Parser (Result String (List Circle))
+urlParser : Navigation.Parser (Result String UrlArg)
 urlParser =
   Navigation.makeParser (fromUrl << .hash)
 
-urlUpdate : Result String (List Circle) -> Model -> (Model, Cmd Msg)
+urlUpdate : Result String UrlArg -> Model -> (Model, Cmd Msg)
 urlUpdate result model =
   case result of
-    Ok circles ->
+    Ok Nothing ->
+      (model, Cmd.none)
+    Ok (Just circles) ->
       ({ model | circles = circles }, drawCircles circles)
     Err msg ->
-      (model, Cmd.none)
+      (initModel, drawCircles [])
 
 
 -- MODEL
@@ -86,20 +96,25 @@ type alias Circle =
   , radius : Float
   }
 
+type alias UrlArg =
+  Maybe (List Circle)
+
 defaultRadius : Float
 defaultRadius = 200.0
 
-init : Result String (List Circle) -> (Model, Cmd Msg)
+init : Result String UrlArg -> (Model, Cmd Msg)
 init result =
   let
-    initModel =
-      { location = Location 0.0 0.0
-      , circles = []
-      , radius = defaultRadius
-      }
+    -- x = Debug.log "init" result
     (model, cmd) = urlUpdate result initModel
   in model ! [ initMap True, cmd ]
 
+initModel : Model
+initModel =
+  { location = Location 0.0 0.0
+  , circles = []
+  , radius = defaultRadius
+  }
 
 -- UPDATE
 

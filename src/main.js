@@ -3,13 +3,6 @@ var app = Elm.Pkmap.fullscreen();
 var map, marker, circles = [];
 var storageKey = 'urlHash';
 
-// only works on the first load
-// restore the last visited url
-// because "mobile-safari home shortcut" does not persist url
-document.body.onload = function() {
-  location.hash = window.localStorage[ storageKey ];
-};
-
 app.ports.initMap.subscribe(function( o ) {
   if ( !o ) return;
   if ( DEBUG ) { console.log('initMap', o ); }
@@ -28,6 +21,10 @@ app.ports.initMap.subscribe(function( o ) {
     draggable: false,
     map: map
   });
+  // only works on the first load
+  // restore the last visited url
+  // because "mobile-safari home shortcut" does not persist url
+  location.hash = window.localStorage[ storageKey ] || '';
 });
 
 app.ports.locationChange.subscribe(function( loc ) {
