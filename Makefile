@@ -1,6 +1,6 @@
 .PHONY: elm.js page
 
-bundle.js: Main.elm src/main.js
+bundle.js: Pkmap.elm src/main.js
 	npm install
 	npm run install
 	npm run build
