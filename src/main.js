@@ -1,5 +1,5 @@
-/*global Elm initMap google DEBUG window location */
-var app = Elm.Pkmap.fullscreen();
+/*global Elm initMap google DEBUG window location version */
+var app = Elm.Pkmap.fullscreen({ version: version });
 var map, marker, circles = [];
 var storageKey = 'urlHash';
 

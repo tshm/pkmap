@@ -9,8 +9,8 @@ import Json.Decode
 import String
 import List
 
-main : Program Never
-main = Navigation.program urlParser
+main : Program Flag
+main = Navigation.programWithFlags urlParser
   { init = init
   , view = view
   , update = update
@@ -95,6 +95,7 @@ type alias Model =
   { location : Location
   , circles : List Circle
   , radius : Float
+  , version : String
   }
 
 type alias Location =
@@ -110,14 +111,17 @@ type alias Circle =
 type alias UrlArg =
   Maybe (List Circle)
 
+type alias Flag =
+  { version: String }
+
 defaultRadius : Float
 defaultRadius = 200.0
 
-init : Result String UrlArg -> (Model, Cmd Msg)
-init result =
+init : Flag -> Result String UrlArg -> (Model, Cmd Msg)
+init flag result =
   let
     -- x = Debug.log "init" result
-    (model, cmd) = urlUpdate result initModel
+    (model, cmd) = urlUpdate result { initModel | version = flag.version }
   in model ! [ initMap True, cmd ]
 
 initModel : Model
@@ -125,6 +129,7 @@ initModel =
   { location = Location 0.0 0.0
   , circles = []
   , radius = defaultRadius
+  , version = "unknown"
   }
 
 -- UPDATE
@@ -212,6 +217,7 @@ header model =
           , disabled (List.isEmpty model.circles )
           ]
           [ text "Reset"]
+        , label [] [ text model.version ]
         -- , label []
         --   [ text "radius:"
         --   , input

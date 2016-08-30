@@ -4,8 +4,9 @@
   "description": "map",
   "scripts": {
     "install": "elm-package install --yes",
-    "bundle": "uglifyjs elm.js src/main.js -o bundle.js --define DEBUG=false -c -m",
+    "bundle": "uglifyjs version.js elm.js src/main.js -o bundle.js --define DEBUG=false -c -m",
     "build": "elm-make --warn --yes Pkmap.elm --output elm.js",
+    "prebuild": "node createVersion.js",
     "test": "eslint src/main.js"
   },
   "repository": {
@@ -21,6 +22,7 @@
   "devDependencies": {
     "elm": "^0.17.1",
     "eslint": "^3.3.1",
+    "shelljs": "^0.7.4",
     "uglify-js": "^2.7.3"
   }
 }
