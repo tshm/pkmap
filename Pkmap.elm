@@ -21,6 +21,10 @@ main = Navigation.program urlParser
 
 -- URL Handlers
 
+-- | toUrl
+-- >>> toUrl initModel
+-- "#/"
+--
 toUrl : Model -> String
 toUrl model =
   let
@@ -34,6 +38,13 @@ toUrl model =
         |> String.join "/"
   in "#/" ++ hashStr
 
+-- | fromUrl
+-- >>> fromUrl ""
+-- Ok Nothing
+--
+-- >>> fromUrl "#/"
+-- Ok (Just [])
+--
 fromUrl : String -> Result String UrlArg
 fromUrl url =
   let
