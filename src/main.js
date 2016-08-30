@@ -39,7 +39,8 @@ app.ports.drawCircles.subscribe(function( xs ) {
   if ( DEBUG ) { console.log('drawCircles', xs ); }
   resetCircle();
   xs.reverse().forEach( drawCircle );
-  window.localStorage[ storageKey ] = location.hash;
+  window.localStorage[ storageKey ] =
+    location.hash.length > 2 ? location.hash : '';
 });
 
 function drawCircle( o ) {
