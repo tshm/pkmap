@@ -3,9 +3,8 @@ var app = Elm.Pkmap.fullscreen({ version: version });
 var map, marker, circles = [];
 var storageKey = 'urlHash';
 
-app.ports.initMap.subscribe(function( o ) {
-  if ( !o ) return;
-  if ( DEBUG ) { console.log('initMap', o ); }
+app.ports.initMap.subscribe(function() {
+  if ( DEBUG ) { console.log('initMap'); }
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 0.0, lng: 0.0},
     zoom: 17

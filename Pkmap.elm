@@ -9,15 +9,13 @@ import Json.Decode
 import String
 import List
 
-main : Program Flag
-main = Navigation.programWithFlags urlParser
+main : Program Flag Model Msg
+main = Navigation.programWithFlags updateLocation
   { init = init
   , view = view
   , update = update
-  , urlUpdate = urlUpdate
   , subscriptions = subscriptions
   }
-
 
 -- URL Handlers
 
@@ -28,66 +26,45 @@ main = Navigation.programWithFlags urlParser
 toUrl : Model -> String
 toUrl model =
   let
-    toParamStr c =
-      (toString c.center.latitude) ++ "," ++
-      (toString c.center.longitude) ++ "," ++
-      (toString c.radius)
+    toParamStr { center, radius } =
+      [ center.latitude, center.longitude, radius ]
+        |> List.map toString
+        |> String.join ","
     hashStr =
       model.circles
         |> List.map toParamStr
         |> String.join "/"
   in "#/" ++ hashStr
 
--- | fromUrl
--- >>> fromUrl ""
--- Ok Nothing
+-- | updateLocation
+-- >>> updateLocation ""
+-- LoadCircles []
 --
--- >>> fromUrl "#/"
--- Ok (Just [])
+-- >>> updateLocation "#/"
+-- LoadCircles []
 --
-fromUrl : String -> Result String UrlArg
-fromUrl url =
+-- >>> updateLocation "#/1,2,3"
+-- LoadCircles [Circle (Location 1 2) 3]
+--
+updateLocation : Navigation.Location -> Msg
+updateLocation { hash } =
   let
-    -- x = Debug.log "fromUrl" url
-    circleDecoder =
-      Json.Decode.tuple3
+    x = Debug.log "updateLocation" hash
+    result =
+        Json.Decode.decodeString (Json.Decode.list circle) jsonStr
+    jsonStr =
+      String.dropLeft 2 hash
+        |> String.split "/"
+        |> String.join "],["
+        |> \x -> "[[" ++ x ++ "]]"
+    circle =
+      Json.Decode.map3
         (\x y z -> Circle (Location x y) z)
-        Json.Decode.float
-        Json.Decode.float
-        Json.Decode.float
-    parseFloatTriple str =
-      Result.map Just <|
-        Json.Decode.decodeString
-          (Json.Decode.list circleDecoder) str
+        ( Json.Decode.index 0 Json.Decode.float )
+        ( Json.Decode.index 1 Json.Decode.float )
+        ( Json.Decode.index 2 Json.Decode.float )
   in
-    case url of
-      "" ->
-        Ok Nothing
-      "#/" ->
-        Ok (Just [])
-      str ->
-        str
-          |> String.dropLeft 2
-          |> String.split "/"
-          |> List.filter (not << String.isEmpty)
-          |> String.join "],["
-          |> \s -> "[[" ++ s ++ "]]"
-          |> parseFloatTriple
-
-urlParser : Navigation.Parser (Result String UrlArg)
-urlParser =
-  Navigation.makeParser (fromUrl << .hash)
-
-urlUpdate : Result String UrlArg -> Model -> (Model, Cmd Msg)
-urlUpdate result model =
-  case result of
-    Ok Nothing ->
-      (model, Cmd.none)
-    Ok (Just circles) ->
-      ({ model | circles = circles }, drawCircles circles)
-    Err msg ->
-      (initModel, drawCircles [])
-
+    LoadCircles (Result.withDefault [] result)
 
 -- MODEL
 
@@ -117,12 +94,12 @@ type alias Flag =
 defaultRadius : Float
 defaultRadius = 200.0
 
-init : Flag -> Result String UrlArg -> (Model, Cmd Msg)
-init flag result =
+init : Flag -> Navigation.Location -> (Model, Cmd Msg)
+init flag location =
   let
-    -- x = Debug.log "init" result
-    (model, cmd) = urlUpdate result { initModel | version = flag.version }
-  in model ! [ initMap True, cmd ]
+    model = { initModel | version = flag.version }
+    (newmodel, cmd) = update (updateLocation location) model
+  in newmodel ! [ cmd, initMap () ]
 
 initModel : Model
 initModel =
@@ -139,11 +116,12 @@ type Msg
   | AddCircle
   | ResetCircle
   | RemoveCircle
+  | LoadCircles (List Circle)
   --| ChangeRadius String
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case Debug.log "msg" msg of
     LocationChange geoloc ->
       let
         location = Location geoloc.latitude geoloc.longitude
@@ -153,28 +131,34 @@ update msg model =
       let
         circle = Circle model.location model.radius
         circles = circle :: model.circles
-        newmodel = { model | circles = circles }
-      in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
+      in update (LoadCircles circles) model
 
     RemoveCircle ->
       case List.tail model.circles of
         Just circles ->
-          let
-            newmodel = { model | circles = circles }
-          in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
-        Nothing -> model ! []
+          update (LoadCircles circles) model
+        _ -> (model, Cmd.none)
 
     ResetCircle ->
-      let
-        newmodel = { model | circles = []}
-      in newmodel ! [ Navigation.newUrl (toUrl newmodel)]
+      update (LoadCircles []) model
+
+    LoadCircles circles ->
+      if circles == model.circles
+      then (model, Cmd.none)
+      else
+        let
+          newmodel = {model | circles = circles}
+        in newmodel
+             ! [ drawCircles circles
+               , Navigation.newUrl (toUrl newmodel)
+               ]
 
     -- ChangeRadius str ->
     --   let
     --     radius = Result.withDefault defaultRadius <| String.toFloat str
     --   in { model | radius = radius } ! []
 
-port initMap : Bool -> Cmd msg
+port initMap : () -> Cmd msg
 port locationChange : Location -> Cmd msg
 port drawCircles : List Circle -> Cmd msg
 
@@ -193,7 +177,7 @@ view model =
   div []
     [ header model
     , modal
-    , Html.main' []
+    , Html.main_ []
       [ div [ id "map"] []
       , button [ onClick AddCircle, class "plus warning"] [ text "+"]
       ]
@@ -203,7 +187,7 @@ header : Model -> Html.Html Msg
 header model =
   Html.header []
     [ nav []
-      [ input [id "bmenub", type' "checkbox", class "show"] []
+      [ input [id "bmenub", type_ "checkbox", class "show"] []
       , a [ href "#", class "brand"] [ text "PkMap" ]
       , label [for "bmenub", class "burger pseudo button"] [ text "≡"]
       , button [ onClick RemoveCircle, disabled (List.isEmpty model.circles )]
@@ -233,7 +217,7 @@ header model =
 modal : Html.Html Msg
 modal =
   Html.div [ class "modal"]
-    [ input [ id "modal", type' "checkbox"] []
+    [ input [ id "modal", type_ "checkbox"] []
     , label [ for "modal", class "overlay"] []
     , Html.article []
       [ Html.header []
