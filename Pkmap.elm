@@ -19,10 +19,6 @@ main = Navigation.programWithFlags updateLocation
 
 -- URL Handlers
 
--- | toUrl
--- >>> toUrl initModel
--- "#/"
---
 toUrl : Model -> String
 toUrl model =
   let
@@ -36,16 +32,6 @@ toUrl model =
         |> String.join "/"
   in "#/" ++ hashStr
 
--- | updateLocation
--- >>> updateLocation ""
--- LoadCircles []
---
--- >>> updateLocation "#/"
--- LoadCircles []
---
--- >>> updateLocation "#/1,2,3"
--- LoadCircles [Circle (Location 1 2) 3]
---
 updateLocation : Navigation.Location -> Msg
 updateLocation { hash } =
   let
