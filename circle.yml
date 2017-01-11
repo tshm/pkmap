@@ -1,0 +1,12 @@
+## github pages deployment commands
+general:
+  branches:
+    ignore:
+      - gh-pages
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - make publish
+
